@@ -1,2 +1,2 @@
-# Configs shared between my machines
+# Configs
 
