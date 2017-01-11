@@ -1,0 +1,102 @@
+" -------------------------------------
+" --            vundle               --
+" -------------------------------------
+
+set nocompatible
+filetype off
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'davidhalter/jedi-vim'
+Plugin 'scrooloose/nerdtree'
+Plugin 'ctrlpvim/ctrlp.vim'
+Plugin 'easymotion/vim-easymotion'
+Plugin 'junegunn/seoul256.vim'
+
+call vundle#end()
+filetype plugin indent on
+
+" -------------------------------------
+" --            vundle               --
+" -------------------------------------
+
+" configure the tabbing behavior
+set expandtab
+set tabstop=4
+set shiftwidth=4
+
+" configure edit behavior
+set number
+set autoindent
+" set wrapmargin=80
+" set
+
+" use make per default
+set makeprg=make
+
+" configure buffers
+set hidden
+
+" make cursor keys wrapping
+set whichwrap+=<,>,h,l,[,]
+
+" fix backspace behavior
+set backspace=indent,eol,start
+
+" disable linewrapping
+set nowrap
+
+"activate American spell checking per default
+set spell
+set spl=en_us
+
+" add keyboard shortcut to jump to next spelling mistake
+nmap <c-f> ]s
+
+" activate and configure syntax highlights
+syntax on
+colorscheme seoul256
+set background=dark
+
+" show character at columns 81 characters
+" use for all characters over 80 match OverLength /\%81v.\+/
+highlight OverLength ctermbg=red ctermfg=white guibg=#D9D9D9
+match OverLength /\%81v./
+
+" fix trailing spaces
+highlight ExtraWhitespace ctermbg=LightYellow guibg=LightYellow
+match ExtraWhitespace /\s\+$/
+
+" based on http://stackoverflow.com/a/3475364
+func! DeleteTrailingWhiteSpace()
+    exe "normal mz"
+    %s/\s\+$//ge
+    exe "normal `z"
+endfunc
+
+au BufWrite *.py :call DeleteTrailingWhiteSpace()
+
+" add command to remove all 'Mac'-spaces
+command! CleanMacSpace %s#\%u00a0##
+
+" enable markdown syntax highlighting for *.md files
+au BufRead,BufNewFile *.md set filetype=markdown
+
+"" merely underline spell check errors
+hi clear SpellBad
+hi SpellBad cterm=underline
+
+" configure NERDTree
+map <C-n> :NERDTreeToggle<CR>
+let NERDTreeIgnore=['\.pyc$', '\~$']
+
+" configure easymotion
+map  <Leader>w <Plug>(easymotion-bd-w)
+nmap <Leader>w <Plug>(easymotion-overwin-w)
+
+" config vim-jedi
+" make sure the preview window is closed after completion
+autocmd CompleteDone * pclose
+
