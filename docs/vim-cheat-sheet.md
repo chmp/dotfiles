@@ -7,6 +7,7 @@ in my configuration.
 
 - `<Ctrl>n`: open tree view
 - `<Ctrl>p`: open quick search
+- `:retab`: apply the current tab settings
 
 ## Python code navigation
 
