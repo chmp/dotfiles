@@ -101,3 +101,6 @@ nmap <Leader>w <Plug>(easymotion-overwin-w)
 " make sure the preview window is closed after completion
 autocmd CompleteDone * pclose
 
+" show call signatures in status line
+let g:jedi#show_call_signatures = "2"
+
