@@ -121,8 +121,11 @@ def copy(src, dst, dry_run, options):
     else:
         _logger.info('copy %s -> %s', src, dst)
 
-        if not dry_run:
+        if not dry_run and os.path.isfile(src):
             shutil.copy(src, dst)
+
+        if not dry_run and os.path.isdir(src):
+            shutil.copytree(src, dst)
 
 
 def path_hash(p):
