@@ -16,6 +16,7 @@ Plugin 'easymotion/vim-easymotion'
 Plugin 'junegunn/seoul256.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'ekalinin/Dockerfile.vim'
+Plugin 'junegunn/goyo.vim'
 
 call vundle#end()
 filetype plugin indent on
