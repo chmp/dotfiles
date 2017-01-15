@@ -106,3 +106,6 @@ autocmd CompleteDone * pclose
 " show call signatures in status line
 let g:jedi#show_call_signatures = "2"
 
+" CtrlP
+map <C-B> :CtrlPMRUFiles<CR>
+
