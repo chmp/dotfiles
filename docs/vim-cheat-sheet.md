@@ -5,17 +5,19 @@ in my configuration.
 
 ## Misc
 
-- `<Ctrl>n`: open tree view
-- `<Ctrl>p`: open quick search
+- `<C-n>`: open tree view
+- `<C>p>`: open quick search
+- `<C-b>`: open quick search in recently opened files
 - `:retab`: apply the current tab settings
 - `<Leader>w`: start quick navigation
 - `z=`: spell check
 - `gqw`: wrap line
+- `:set paste` / `:set nopaste`: enable / disable paste mode
 
 ## Python code navigation
 
 - `<Leader>d`: goto definition
-- `<Ctrl>o`: jump back
+- `<C-o>`: jump back
 
 ## Markdown writing
 
