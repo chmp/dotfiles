@@ -10,7 +10,6 @@ call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'davidhalter/jedi-vim'
-Plugin 'scrooloose/nerdtree'
 Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'easymotion/vim-easymotion'
 Plugin 'junegunn/seoul256.vim'
@@ -91,10 +90,6 @@ au BufRead,BufNewFile *.md set filetype=markdown
 hi clear SpellBad
 hi SpellBad cterm=underline
 
-" configure NERDTree
-map <C-n> :NERDTreeToggle<CR>
-let NERDTreeIgnore=['\.pyc$', '\~$']
-
 " configure easymotion
 map  <Leader>w <Plug>(easymotion-bd-w)
 nmap <Leader>w <Plug>(easymotion-overwin-w)
@@ -107,5 +102,8 @@ autocmd CompleteDone * pclose
 let g:jedi#show_call_signatures = "2"
 
 " CtrlP
-map <C-B> :CtrlPMRUFiles<CR>
+map <C-N> :CtrlPMRUFiles<CR>
+
+" show only files not ignored by .gitignore
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
 
