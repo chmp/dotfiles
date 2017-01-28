@@ -53,11 +53,29 @@ def load_config(path):
     config['commands'] = config.get('commands', [])
 
     # merge inherited configs
-    if 'inherit' in config:
-        parent = load_config(os.path.join(config_dir, config['inherit']))
-        config = {**parent, **config}
+    if 'inherit' not in config:
+        return config
 
-    return config
+    parent = load_config(os.path.join(config_dir, config['inherit']))
+    result = parent.copy()
+
+    for k, v in config.items():
+        if not k in result:
+            result[k] = v
+
+        else:
+            assert type(result[k]) is type(v)
+
+            if type(v) is dict:
+                result[k].update(v)
+
+            elif type(v) is list:
+                result[k].extend(v)
+
+            else:
+                result[k] = v
+
+    return result
 
 
 def run(config, dry_run=False):
