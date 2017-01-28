@@ -13,6 +13,7 @@ in my configuration.
 - `z=`: spell check
 - `gqw`: wrap line
 - `:set paste` / `:set nopaste`: enable / disable paste mode
+- `:42`: go to line 42
 
 ## Python code navigation
 
