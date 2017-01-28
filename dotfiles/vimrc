@@ -16,6 +16,7 @@ Plugin 'junegunn/seoul256.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'ekalinin/Dockerfile.vim'
 Plugin 'junegunn/goyo.vim'
+Plugin 'chmp/mdnav'
 
 call vundle#end()
 filetype plugin indent on
@@ -114,4 +115,7 @@ map <C-N> :CtrlPMRUFiles<CR>
 
 " show only files not ignored by .gitignore
 let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+
+" configure mdnav
+let g:mdnav#Extensions = '.md'
 
