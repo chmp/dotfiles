@@ -24,6 +24,14 @@ filetype plugin indent on
 " --            vundle               --
 " -------------------------------------
 
+" configure tab completion behavior
+set wildmode=longest,list,full
+set wildmenu
+
+" always show the current file name
+set laststatus=2
+set title
+
 " configure the tabbing behavior
 set expandtab
 set tabstop=4
