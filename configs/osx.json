@@ -1,0 +1,9 @@
+{
+    "inherit": "base.json",
+    "directories": [
+        "~/.mjolnir"
+    ],
+    "link": {
+        "../dotfiles/mjolnir.lua": "~/.mjolnir/init.lua"
+    }
+}
