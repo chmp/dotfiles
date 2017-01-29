@@ -10,7 +10,8 @@
     },
     "link": {
         "../dotfiles/vimrc": "~/.vimrc",
-        "../dotfiles/tmux.conf": "~/.tmux.conf"
+        "../dotfiles/tmux.conf": "~/.tmux.conf",
+        "../dotfiles/bash_common": "~/.bash_common"
     },
     "commands": [
         "vim +PluginInstall +qall"
