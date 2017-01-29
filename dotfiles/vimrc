@@ -69,7 +69,15 @@ nmap <c-f> ]s
 " activate and configure syntax highlights
 syntax on
 colorscheme seoul256
-set background=dark
+
+" select the colorscheme to match the time of day
+if strftime("%H") < 18
+    set background=light
+else
+    set background=dark
+endif
+
+command! SwitchBackground :let &background = (&background == 'light' ? 'dark' : 'light')
 
 " show character at columns 81 characters
 " use for all characters over 80 match OverLength /\%81v.\+/
@@ -81,13 +89,15 @@ highlight ExtraWhitespace ctermbg=LightYellow guibg=LightYellow
 match ExtraWhitespace /\s\+$/
 
 " based on http://stackoverflow.com/a/3475364
-func! DeleteTrailingWhiteSpace()
+func! ImplDeleteTrailingWhiteSpace()
     exe "normal mz"
     %s/\s\+$//ge
     exe "normal `z"
 endfunc
 
-au BufWrite *.py :call DeleteTrailingWhiteSpace()
+command! DeleteTrailingWhiteSpace :call ImplDeleteTrailingWhiteSpace()
+
+au BufWrite *.py :call ImplDeleteTrailingWhiteSpace()
 
 " add command to remove all 'Mac'-spaces
 command! CleanMacSpace %s#\%u00a0##
