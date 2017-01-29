@@ -14,6 +14,9 @@ in my configuration.
 - `gqw`: wrap line
 - `:set paste` / `:set nopaste`: enable / disable paste mode
 - `:42`: go to line 42
+- `:SwitchBackground`: switch from dark to light background
+- `:DeleteTrailingWhiteSpace`
+- `:DeleteMacSpace`
 
 ## Python code navigation
 
