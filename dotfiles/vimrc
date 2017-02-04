@@ -128,4 +128,5 @@ let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standar
 
 " configure mdnav
 let g:mdnav#Extensions = '.md'
+command! NN e ~/.notes-index.md
 
