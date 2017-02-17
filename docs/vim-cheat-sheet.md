@@ -18,6 +18,9 @@ in my configuration.
 - `:SwitchBackground`: switch from dark to light background
 - `:DeleteTrailingWhiteSpace`
 - `:DeleteMacSpace`
+- `:{{range}}sort`: sort part or all of a file, in visual mode the range is
+  pre-entered
+- `:set hlsearch`: highlight search matches
 
 ## Python code navigation
 
