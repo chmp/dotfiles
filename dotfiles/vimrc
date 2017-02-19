@@ -122,3 +122,18 @@ let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standar
 let g:mdnav#Extensions = '.md'
 command! NN e `readlink ~/.notes-index.md`
 
+" add command to call tig at nearest git repo
+func! ExecuteTig()
+    let l:git_dir = finddir('.git', expand('%:p:h') . ';')
+
+    if l:git_dir == ''
+        echo 'could not find gitfolder'
+        return
+    endif       
+    
+    let l:project_dir = fnamemodify(l:git_dir, ':h')
+    exec '!cd' shellescape(l:project_dir) '&& tig'
+endfunc
+
+command! Tig :call ExecuteTig()
+
