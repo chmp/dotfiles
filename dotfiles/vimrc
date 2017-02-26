@@ -17,6 +17,7 @@ Plugin 'airblade/vim-gitgutter'
 Plugin 'ekalinin/Dockerfile.vim'
 Plugin 'junegunn/goyo.vim'
 Plugin 'chmp/mdnav'
+Plugin 'tpope/vim-eunuch'
 
 call vundle#end()
 filetype plugin indent on
