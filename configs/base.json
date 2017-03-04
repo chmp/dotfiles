@@ -1,6 +1,8 @@
 {
     "directories": [
-        "~/.vim/bundle"
+        "~/.vim/bundle",
+        "~/.jupyter/custom",
+        "~/.jupyter/custom/fonts"
     ],
     "copy": {
         "../dotfiles/vim/bundle/Vundle.vim": {
@@ -11,7 +13,11 @@
     "link": {
         "../dotfiles/vimrc": "~/.vimrc",
         "../dotfiles/tmux.conf": "~/.tmux.conf",
-        "../dotfiles/bash_common": "~/.bash_common"
+        "../dotfiles/bash_common": "~/.bash_common",
+        "../contrib/spinzero-jupyter-theme/custom.css": "~/.jupyter/custom/custom.css",
+        "../contrib/spinzero-jupyter-theme/fonts/sf-display": "~/.jupyter/custom/fonts/sf-display",
+        "../contrib/spinzero-jupyter-theme/fonts/sf-mono": "~/.jupyter/custom/fonts/sf-mono",
+        "../contrib/spinzero-jupyter-theme/fonts/sf-text": "~/.jupyter/custom/fonts/sf-text"
     },
     "commands": [
         "vim +PluginInstall +qall"
