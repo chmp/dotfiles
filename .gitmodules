@@ -1,3 +1,6 @@
 [submodule "dotfiles/vim/bundle/Vundle.vim"]
 	path = dotfiles/vim/bundle/Vundle.vim
 	url = https://github.com/VundleVim/Vundle.vim
+[submodule "contrib/spinzero-jupyter-theme"]
+	path = contrib/spinzero-jupyter-theme
+	url = https://github.com/neilpanchal/spinzero-jupyter-theme.git
