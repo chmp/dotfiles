@@ -18,6 +18,7 @@ Plugin 'ekalinin/Dockerfile.vim'
 Plugin 'junegunn/goyo.vim'
 Plugin 'chmp/mdnav'
 Plugin 'tpope/vim-eunuch'
+Plugin 'jaxbot/semantic-highlight.vim'
 
 call vundle#end()
 filetype plugin indent on
