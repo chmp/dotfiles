@@ -28,6 +28,8 @@ filetype plugin indent on
 " --            vundle               --
 " -------------------------------------
 
+set t_Co=256
+
 " configure tab completion behavior
 set wildmode=longest,list,full
 set wildmenu
