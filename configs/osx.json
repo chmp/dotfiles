@@ -1,9 +1,11 @@
 {
     "inherit": "base.json",
     "directories": [
-        "~/.mjolnir"
+        "~/.mjolnir",
+        "~/Library/KeyBindings"
     ],
     "link": {
-        "../dotfiles/mjolnir.lua": "~/.mjolnir/init.lua"
+        "../dotfiles/mjolnir.lua": "~/.mjolnir/init.lua",
+        "../dotfiles/Library/KeyBindings/DefaultKeyBinding.dict": "~/Library/KeyBindings/DefaultKeyBinding.dict"
     }
 }
