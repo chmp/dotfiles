@@ -20,6 +20,13 @@ import os.path
 import shutil
 import sys
 
+try:
+    import jinja2
+    HAS_JINJA = True
+
+except ImportError:
+    HAS_JINJA = False
+
 _logger = logging.getLogger(__name__)
 
 
@@ -38,6 +45,7 @@ def main():
         raise SystemExit(0)
 
     run(config, dry_run=args.dry_run)
+
 
 def load_config(path):
     with open(path, 'r') as fobj:
@@ -198,8 +206,28 @@ def link(src, dst, dry_run, options):
 
 
 def render_template(src, dst, dry_run, options):
+    if not HAS_JINJA:
+        raise RuntimeError('could not find jinja2, templating not supported')
+
     assert_path_exists(src, dry_run=dry_run)
-    raise NotImplementedError()
+
+    with open(src, 'rt') as fobj:
+        template = fobj.read()
+
+    env = jinja2.Environment()
+    env.filters['expandvars'] = os.path.expandvars
+
+    context = {
+        'BASEDIR': os.path.abspath(os.path.dirname(__file__))
+    }
+
+    template = env.from_string(template)
+    content = template.render(**context)
+
+    _logger.info('write %s', dst)
+    if not dry_run:
+        with open(dst, 'wt') as fobj:
+            fobj.write(content)
 
 
 def run_command(cmd, dry_run):

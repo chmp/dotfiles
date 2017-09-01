@@ -1,5 +1,6 @@
 ## Common bash definitions
 
+
 # add command for fuzzy search / insert
 # note this only works with bash 4.x
 function fuzzy_select() {
@@ -12,6 +13,7 @@ function fuzzy_select() {
 }
 
 bind -x '"\C-f": fuzzy_select'
+
 
 export EDITOR=vim
 export LANG=de_DE.UTF-8
@@ -40,3 +42,5 @@ function set_prompt(){
 	export PS1='\e]2;\u@\H:$(pwd)\a \n[\t] '$BOLD'\u@\H $(pwd)'$NORM'\n\$ '
 }
 set_prompt
+
+export PATH="$PATH:/Volumes/Home/Code/dotfiles/tools"

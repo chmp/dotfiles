@@ -6,13 +6,15 @@
     ],
     "copy": {
         "../dotfiles/vim/bundle/Vundle.vim": {
-		"path": "~/.vim/bundle/Vundle.vim",
-		"ignore_existing": true
-	}
+            "path": "~/.vim/bundle/Vundle.vim",
+            "ignore_existing": true
+        }
     },
     "link": {
         "../dotfiles/vimrc": "~/.vimrc",
-        "../dotfiles/tmux.conf": "~/.tmux.conf",
+        "../dotfiles/tmux.conf": "~/.tmux.conf"
+    },
+    "render": {
         "../dotfiles/bash_common": "~/.bash_common"
     },
     "commands": [
