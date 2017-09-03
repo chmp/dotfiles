@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+import collections
+import contextlib
+import os.path
+import subprocess
+import time
+
+home_dir = os.path.expanduser('~')
+repository_update_interval = 30 * 60
+status_update_interval = 5 * 60
+
+
+def main():
+    try:
+        with full_screen():
+            _loop()
+
+    except KeyboardInterrupt:
+        print('stopped')
+
+
+def _loop():
+    next_repository_update = 0
+    last_repository_update = 0
+    next_status_update = 0
+
+    repositories = []
+
+    while True:
+        now = time.time()
+
+        if now > next_repository_update:
+            repositories = get_repositories()
+            next_repository_update = now + repository_update_interval
+            last_repository_update = now
+
+        if now > next_status_update:
+            print_status(repositories, now - last_repository_update)
+            next_status_update = now + status_update_interval
+
+        time.sleep(30)
+
+
+def get_repositories():
+    print('updating repository list ...')
+    args = ['find', home_dir, '-name', '.git', '-type', 'd']
+    repositories = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=home_dir)
+    repositories = repositories.stdout.decode('utf8').splitlines()
+    return [os.path.dirname(p) for p in repositories]
+
+
+def print_status(repositories, timediff_last_update):
+    repositories = [p for p in repositories if os.path.exists(os.path.join(p, '.git'))]
+
+    status = {
+        r: get_status(r)
+        for r in repositories
+    }
+    status = {k: v for k, v in status.items() if v}
+
+    clear_screen()
+    print(f'repository list, last updated {timediff_last_update:.0f}')
+    for p, s in status.items():
+        code_counts = collections.Counter([v[0] for v in s])
+        print(p, ' '.join(f'{code}({count})' for code, count in sorted(code_counts.items())))
+
+    print()
+    print()
+
+
+def get_status(path):
+    args = ['git', 'status', '-s']
+    res = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path)
+    lines = res.stdout.decode('utf8').splitlines()
+
+    result = []
+
+    for line in lines:
+        code = line[:2].strip()
+        fname = line[3:]
+        result.append((code, fname))
+
+    return result
+
+
+@contextlib.contextmanager
+def full_screen():
+    # save screen state
+    print('\033[?47h', end='')
+    clear_screen()
+
+    try:
+        yield
+
+    except:
+        # make sure the exception is printed after restoring the screen
+        print('\033[?47l', end='')
+        raise
+
+    else:
+        print('\033[?47l', end='')
+
+
+def clear_screen():
+    # clear jump to home
+    print('\33[2J\33[H', end='')
+
+
+if __name__ == "__main__":
+    main()
