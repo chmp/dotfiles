@@ -6,6 +6,7 @@ from __future__ import print_function, division, absolute_import
 import argparse
 import importlib
 import inspect
+import itertools as it
 import logging
 import os
 import os.path
@@ -159,7 +160,7 @@ def autoobject(line, depth=1, header=3, skip_args=0):
         else:
             signature = ''
 
-    yield '{} {}'.format('#' * header, what)
+    yield '{} `{}`'.format('#' * header, what.strip())
 
     if signature:
         yield '`{}`'.format(signature)
@@ -268,6 +269,19 @@ class MarkdownWriter(Writer):
 
     def _translate_literal(self, node):
         yield '`{}`'.format(node.astext())
+
+    def _translate_bullet_list(self, node):
+        for c in node.children:
+            prefixes = it.chain(['- ', ], it.repeat('  '))
+
+            child_content = ''.join(self._translate_children(c))
+            child_content = child_content.splitlines()
+            child_content = (l.strip() for l in child_content)
+            child_content = (l for l in child_content if l)
+            child_content = '\n'.join(p + l for p, l in zip(prefixes, child_content))
+            child_content  = child_content + '\n'
+
+            yield child_content
 
     def _translate_field_list(self, node):
         by_section = {}
