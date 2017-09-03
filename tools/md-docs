@@ -3,6 +3,7 @@
 """
 from __future__ import print_function, division, absolute_import
 
+import argparse
 import importlib
 import inspect
 import logging
@@ -26,11 +27,20 @@ _logger = logging.getLogger(__name__)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('src')
+    parser.add_argument('dst')
+
+    args = parser.parse_args()
+
+    transform_directories(args.src, args.dst)
+
+
+def transform_directories(src, dst):
     setup_rst_roles()
 
-    self_path = os.path.dirname(__file__)
-    docs_dir = os.path.abspath(os.path.join(self_path, '..'))
-    src_dir = os.path.abspath(os.path.join(self_path, '..', 'docs', 'src'))
+    src_dir = os.path.abspath(src)
+    docs_dir = os.path.abspath(dst)
 
     for fname in relwalk(src_dir):
         if not fname.endswith('.md'):
