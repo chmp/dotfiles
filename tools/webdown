@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""Tool to download a website, strip scripts and inline images.
+
+Built on-top of selenium and beautiful soup.
+
+Python requirements:
+    beautifulsoup4
+    selenium
+    requests
+    cachecontrol
+
+Tool requirements:
+    brew install chromedriver
+
+"""
+import argparse
+import base64
+import contextlib
+import logging
+import re
+import urllib.parse
+
+import bs4
+import cachecontrol
+import selenium.webdriver
+import requests
+
+try:
+    from tqdm import tqdm
+
+except ImportError:
+    tqdm = iter
+
+
+_logger = logging.getLogger(__name__)
+
+_parser = argparse.ArgumentParser()
+_parser.add_argument('url')
+_parser.add_argument('target')
+_parser.add_argument('--keep-iframes', default=False, action='store_true')
+
+
+def main():
+    args = _parser.parse_args()
+    webdown(args.url, args.target, keep_iframes=args.keep_iframes)
+
+
+def webdown(url, target, keep_iframes=False):
+    sess = requests.session()
+    sess = cachecontrol.CacheControl(sess)
+
+    _logger.info('load page html')
+    with contextlib.closing(selenium.webdriver.Chrome()) as driver:
+        driver.get(url)
+        html = driver.execute_script("return document.documentElement.outerHTML")
+
+    _logger.info('write %s', target)
+    with open(target, 'wt') as fobj:
+        fobj.write(transform_html(sess, url, html, keep_iframes=keep_iframes))
+
+
+def transform_html(sess, base_url, html, keep_iframes):
+    soup = bs4.BeautifulSoup(html, 'html.parser')
+
+    _logger.info('inline images')
+    for img in tqdm(soup.find_all('img')):
+        if img.has_attr('src') and not img['src'].startswith('data'):
+            url = urllib.parse.urljoin(base_url, img['src'])
+            img['src'] = get_image_as_data_uri(sess, url)
+
+        if img.has_attr('srcset'):
+            del img.attrs['srcset']
+
+    _logger.info('delete all script tags')
+    for s in soup.find_all('script'):
+        s.extract()
+
+    _logger.info('inline style sheets')
+    for s in tqdm(soup.find_all('link')):
+        if not (s.get('rel') == ['stylesheet'] and s.has_attr('href')):
+            continue
+
+        if s['href'].startswith('https://fonts.googleapis.com'):
+            s.extract()
+
+        else:
+            url = urllib.parse.urljoin(base_url, s['href'])
+            r = sess.get(url, headers=headers)
+            style = r.text
+
+            style = inline_background_image(sess, base_url, style)
+
+            t = soup.new_tag('style')
+            t.append(style)
+            s.replaceWith(t)
+
+    _logger.info('inline background images')
+    for el in tqdm(soup.find_all(lambda el: el.has_attr('style') and 'background-image' in el['style'])):
+        el['style'] = inline_background_image(sess, base_url, el['style'])
+
+    if not keep_iframes:
+        _logger.info('strip iframes')
+        for el in soup.find_all('iframe'):
+            el.extract()
+
+    return str(soup)
+
+
+def get_image_as_data_uri(sess, url):
+    r = sess.get(url, headers=headers)
+    image_content_type = r.headers['Content-Type']
+    image_data = r.content
+
+    data_uri = [
+        "data:",
+        image_content_type,
+        ";base64,",
+        base64.b64encode(image_data).decode('ascii')
+    ]
+    return ''.join(data_uri)
+
+
+def inline_background_image(sess, base_url, style):
+    def repl(m):
+        url = m.group(1)
+        url = urllib.parse.urljoin(base_url, url)
+
+        return ''.join([
+            'background-image:url(',
+            get_image_as_data_uri(sess, url),
+            ')',
+        ])
+
+    return background_image_pattern.sub(repl, style)
+
+
+background_image_pattern = re.compile(
+    r'''
+        background-image:url\(
+            (?!data:)
+            ([^\)]*)
+        \)''',
+    re.VERBOSE,
+)
+
+headers = {
+    'User-Agent': ' '.join([
+        'Mozilla/5.0',
+        '(Macintosh; Intel Mac OS X 10_10_1)',
+        'AppleWebKit/537.36',
+        '(KHTML, like Gecko)',
+        'Chrome/41.0.2227.1',
+        'Safari/537.36',
+    ]),
+}
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()
