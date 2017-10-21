@@ -112,6 +112,9 @@ nmap <Leader>w <Plug>(easymotion-overwin-w)
 " make sure the preview window is closed after completion
 autocmd CompleteDone * pclose
 
+" config YCM
+let g:ycm_python_binary_path = 'python'
+
 " show call signatures in status line
 let g:jedi#show_call_signatures = "2"
 
@@ -132,8 +135,8 @@ func! ExecuteTig()
     if l:git_dir == ''
         echo 'could not find gitfolder'
         return
-    endif       
-    
+    endif
+
     let l:project_dir = fnamemodify(l:git_dir, ':h')
     exec '!cd' shellescape(l:project_dir) '&& tig'
 endfunc
