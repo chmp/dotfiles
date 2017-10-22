@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+"""Helper to deal with zotero.
+"""
+import argparse
+import json
+import logging
+import subprocess
+import os
+import os.path
+
+_logger = logging.getLogger('__name__')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    update_index_parser = subparsers.add_parser('update-index')
+    update_index_parser.set_defaults(func=update_index)
+
+    contains_parser = subparsers.add_parser('contains')
+    contains_parser.set_defaults(func=contains)
+    contains_parser.add_argument('fnames', nargs='+')
+    contains_parser.add_argument('-i', dest='invert', action='store_true', default=False)
+
+    args = parser.parse_args()
+
+    if not hasattr(args, 'func'):
+        parser.print_help()
+        raise SystemExit(1)
+
+    args.func(args)
+
+
+def update_index(args):
+    zotero_dir = os.path.expanduser('~/Zotero')
+    index_file = os.path.expanduser('~/.zotero_check')
+
+    _logger.info('build index')
+    obj = {
+        'index': generate_index(zotero_dir),
+    }
+
+    _logger.info('write %s', index_file)
+    with open(index_file, 'wt') as fobj:
+        json.dump(obj, fobj)
+
+
+def contains(args):
+    index_file = os.path.expanduser('~/.zotero_check')
+
+    with open(index_file, 'rt') as fobj:
+        index = json.load(fobj)
+
+    known_files = index['index'].values()
+    show_found = not args.invert
+
+    for fname in args.fnames:
+        fname = os.path.abspath(fname)
+        hash = _shasum(fname)
+
+        if (hash in known_files) == show_found:
+            print(fname)
+
+
+def generate_index(zotero_dir):
+    storage_dir = os.path.join(zotero_dir, 'storage')
+
+    known_files = [
+        attachment
+
+        for item_dir in _listdir(storage_dir)
+        if os.path.isdir(item_dir)
+        for attachment in _listdir(item_dir)
+        if (
+            os.path.isfile(attachment) and
+            not os.path.basename(attachment).startswith('.')
+        )
+    ]
+
+    return {f: _shasum(f) for f in known_files}
+
+
+def _listdir(d):
+    return (os.path.join(d, p) for p in os.listdir(d))
+
+
+def _shasum(f):
+    output = subprocess.check_output(['shasum', f])
+    output = output.decode('utf8').splitlines()
+
+    for line in output:
+        hash, _1, _2 = line.partition(' ')
+        return hash
+
+    else:
+        raise RuntimeError()
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()
+
