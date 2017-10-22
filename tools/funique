@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+"""Simple Helper to deduplicate a list of files
+"""
+from __future__ import print_function
+
+import argparse
+import json
+import subprocess
+import os.path
+import sys
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', dest='annotate', action='store_true', default=False)
+    args = parser.parse_args()
+
+    seen = {}
+    for fname in sys.stdin:
+        fname = fname.rstrip()
+        fname = os.path.abspath(fname)
+        hash = _shasum(fname)
+
+        if hash not in seen:
+            seen[hash] = fname
+            continue
+
+        if args.annotate:
+            print(fname, '#', seen[hash])
+
+        else:
+            print(fname)
+
+
+def _shasum(f):
+    output = subprocess.check_output(['shasum', f])
+    output = output.decode('utf8').splitlines()
+
+    for line in output:
+        hash, _1, _2 = line.partition(' ')
+        return hash
+
+    else:
+        raise RuntimeError()
+
+
+if __name__ == "__main__":
+    main()
+
