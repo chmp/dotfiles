@@ -2,16 +2,6 @@
 """Tool to download a website, strip scripts and inline images.
 
 Built on-top of selenium and beautiful soup.
-
-Python requirements:
-    beautifulsoup4
-    selenium
-    requests
-    cachecontrol
-
-Tool requirements:
-    brew install chromedriver
-
 """
 import argparse
 import base64
@@ -20,10 +10,17 @@ import logging
 import re
 import urllib.parse
 
-import bs4
-import cachecontrol
-import selenium.webdriver
-import requests
+try:
+    import bs4
+    import cachecontrol
+    import selenium.webdriver
+    import requests
+
+except ImportError as e:
+    _import_error = e
+
+else:
+    _import_error = False
 
 try:
     from tqdm import tqdm
@@ -42,6 +39,13 @@ _parser.add_argument('--keep-iframes', default=False, action='store_true')
 
 def main():
     args = _parser.parse_args()
+
+    if _import_error is not False:
+        _logger.error('requirements not present')
+        _logger.info('install: brew install chromedriver')
+        _logger.info('install: pip install beautifulsoup4 selenium requests cachecontrol')
+        raise _import_error
+
     webdown(args.url, args.target, keep_iframes=args.keep_iframes)
 
 
