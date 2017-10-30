@@ -279,9 +279,11 @@ class MarkdownWriter(Writer):
             child_content = (l.strip() for l in child_content)
             child_content = (l for l in child_content if l)
             child_content = '\n'.join(p + l for p, l in zip(prefixes, child_content))
-            child_content  = child_content + '\n'
+            child_content = child_content + '\n'
 
             yield child_content
+
+        yield '\n'
 
     def _translate_field_list(self, node):
         by_section = {}
@@ -291,9 +293,12 @@ class MarkdownWriter(Writer):
             parts = name.astext().split()
             section, *parts = parts
 
+            # indent parameter descriptions (as part of a list)
+            indent = '  ' if section in {'param', 'ivar'} else ''
+
             body = ''.join(self._translate_children(body))
             body.strip()
-            body = '\n'.join('  ' + line for line in body.splitlines())
+            body = '\n'.join(indent + line for line in body.splitlines())
             body = body.rstrip()
 
             if section in {'param', 'ivar'}:
@@ -310,7 +315,7 @@ class MarkdownWriter(Writer):
                 value = f'* **{name}** (*{type}*):\n{body}\n'
 
             elif section == 'returns':
-                value = '{body}\n'
+                value = f'{body}\n'
 
             else:
                 raise NotImplementedError('unknown section %s' % section)
