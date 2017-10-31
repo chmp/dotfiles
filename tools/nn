@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# helper to simplify note taking
+#
+
+NOTE_DIR="${HOME}/Documents/Notes/$(date +%Y/%Y%m)"
+NOTE_FILE="${NOTE_DIR}/$(date +%Y%m%d.md)"
+
+mkdir -p "${NOTE_DIR}"
+
+if [ ! -e "${NOTE_FILE}" ]
+then
+    touch "${NOTE_FILE}"
+    date +"# %Y%m%d" >> "${NOTE_FILE}"
+    echo >> "${NOTE_FILE}"
+fi
+
+vim "${NOTE_FILE}"
