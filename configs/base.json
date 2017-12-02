@@ -12,9 +12,7 @@
     },
     "link": {
         "../dotfiles/vimrc": "~/.vimrc",
-        "../dotfiles/tmux.conf": "~/.tmux.conf"
-    },
-    "render": {
+        "../dotfiles/tmux.conf": "~/.tmux.conf",
         "../dotfiles/bash_common": "~/.bash_common"
     },
     "commands": [

@@ -20,6 +20,9 @@ Plugin 'chmp/mdnav'
 Plugin 'tpope/vim-eunuch'
 Plugin 'jaxbot/semantic-highlight.vim'
 Plugin 'ConradIrwin/vim-bracketed-paste'
+Plugin 'godlygeek/tabular'
+Plugin 'plasticboy/vim-markdown'
+Plugin 'severin-lemaignan/vim-minimap'
 
 call vundle#end()
 filetype plugin indent on
@@ -27,6 +30,9 @@ filetype plugin indent on
 " -------------------------------------
 " --            vundle               --
 " -------------------------------------
+
+" conceal
+set conceallevel=2
 
 " configure tab completion behavior
 set wildmode=longest,list,full
@@ -94,6 +100,10 @@ command! DeleteTrailingWhiteSpace :call ImplDeleteTrailingWhiteSpace()
 
 au BufWrite *.py :call ImplDeleteTrailingWhiteSpace()
 
+" configure markdown plugin
+let g:vim_markdown_folding_disabled = 1
+let g:vim_markdown_math = 1
+
 " add command to remove all 'Mac'-spaces
 command! DeleteMacSpace %s#\%u00a0##
 
@@ -126,7 +136,15 @@ let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standar
 
 " configure mdnav
 let g:mdnav#Extensions = '.md'
-command! NN e `readlink ~/.notes-index.md`
+command! NN e `readlink ~/.notes`/Index.md
+command! NT exec 'e ' . substitute(system('readlink ~/.notes'), '\n\+$', '', '') . '/' . strftime('%Y/%Y%m/%Y%m%d.md')
+
+" copied from https://stackoverflow.com/a/4293538
+function WriteCreatingDirs()
+    echo '!mkdir -p ' . expand('%:p:h')
+    write
+endfunction
+command W call WriteCreatingDirs()
 
 " add command to call tig at nearest git repo
 func! ExecuteTig()
