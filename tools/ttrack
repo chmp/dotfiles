@@ -12,6 +12,7 @@ import os
 import os.path
 import subprocess
 import time
+import traceback
 
 import lz4.block
 import AppKit
@@ -52,15 +53,13 @@ def get_data():
     data = {
         'now': datetime.datetime.now().isoformat(),
         'idle_time': get_idle_time(),
-        'applications': get_running_applications(),
         'active_chrome_tab': get_active_chrome_tab(),
         'firefox_tab': get_active_firefox_tab(),
+        'active_application': get_active_application(),
     }
 
-    data['active_application'] = first(d['name'] for d in data['applications'] if d['active'])
-
     # correct firefox tab if it is not running
-    is_firefox_active = any('firefox' in d['name'].lower() for d in data['applications'])
+    is_firefox_active = 'firefox' in get_all_applications().lower()
 
     if not is_firefox_active:
         data['firefox_tab'] = ''
@@ -81,45 +80,84 @@ def get_idle_time():
     return time
 
 
-def get_running_applications():
-    return [
-        {'name': app.localizedName(), 'active': app.isActive()}
-        for app in AppKit.NSWorkspace.sharedWorkspace().runningApplications()
-    ]
+def get_active_application():
+    try:
+        res = subprocess.run(['osascript'], stdout=subprocess.PIPE, input=b'''
+            tell application "System Events"
+                get name of first application process whose frontmost is true
+            end tell
+        ''')
+        return first(res.stdout.decode('utf8').splitlines())
+
+    except Exception:
+        traceback.print_exc()
+        return '<error>'
+
+
+def get_all_applications():
+    try:
+        res = subprocess.run(['osascript'], stdout=subprocess.PIPE, input=b'''
+            tell application "System Events"
+                get (name of every process where background only is false)
+            end tell
+        ''')
+        return first(res.stdout.decode('utf8').splitlines())
+
+    except Exception:
+        traceback.print_exc()
+        return '<error>'
 
 
 def get_active_chrome_tab():
-    res = subprocess.run(['osascript'], stdout=subprocess.PIPE, input=b'''
-        if application "Google Chrome" is running then
-            tell application "Google Chrome"
-                if mode of first window = "incognito" then
-                    log "private"
-                else
-                    get URL of active tab of first window
-                end if
-            end tell
-        else
-            log ""
-        end if
-    ''')
+    try:
+        res = subprocess.run(['osascript'], stdout=subprocess.PIPE, input=b'''
+            if application "Google Chrome" is running then
+                tell application "Google Chrome"
+                    if mode of first window = "incognito" then
+                        log "private"
+                    else
+                        get URL of active tab of first window
+                    end if
+                end tell
+            else
+                log ""
+            end if
+        ''')
 
-    return first(res.stdout.decode('utf8').splitlines())
+        return first(res.stdout.decode('utf8').splitlines())
+
+    except Exception:
+        traceback.print_exc()
+        return '<error>'
 
 
 def get_active_firefox_tab():
-    session_file = get_firefox_session_file_path()
+    try:
+        session_file = get_firefox_session_file_path()
 
-    with open(session_file, 'rb') as fobj:
-        d = load_firefox_session_file(fobj)
+        with open(session_file, 'rb') as fobj:
+            d = load_firefox_session_file(fobj)
 
-    active_window = d['selectedWindow']
-    active_window = d['windows'][active_window - 1]
+        active_window = d['selectedWindow']
 
-    active_tab = active_window['selected']
-    active_tab = active_window['tabs'][active_tab - 1]
+        if active_window <= 0:
+            return ''
 
-    current_page = last(active_tab['entries'])
-    return current_page['url']
+        active_window = d['windows'][active_window - 1]
+
+        active_tab = active_window['selected']
+
+        if active_tab <= 0:
+            return ''
+
+        active_tab = active_window['tabs'][active_tab - 1]
+
+        current_page = last(active_tab['entries'])
+        return current_page['url']
+
+    except Exception:
+        traceback.print_exc()
+        return '<error>'
 
 
 def get_firefox_session_file_path():
