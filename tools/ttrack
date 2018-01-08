@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+# requirements: pyobjc lz4
+# Docs: https://wiki.mozilla.org/Firefox/session_restore
+
+import argparse
+import bz2
+import collections
+import datetime
+import itertools as it
+import json
+import os
+import os.path
+import subprocess
+import time
+
+import lz4.block
+import AppKit
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('log_path')
+
+
+def main():
+    args = parser.parse_args()
+
+    for spinner in it.cycle(spinner_items):
+        log_file = os.path.join(args.log_path, datetime.date.today().strftime('%Y%m%d.log'))
+        data = get_data()
+
+        with bz2.open(log_file, 'at') as fobj:
+            json.dump(data, fobj)
+            print(flush=True, file=fobj)
+
+        print(' ', spinner, flush=True, sep='', end='\r')
+        time.sleep(60)
+
+
+spinner_items = [
+    '[o....]',
+    '[.o...]',
+    '[..o..]',
+    '[...o.]',
+    '[....o]',
+    '[...o.]',
+    '[..o..]',
+    '[.o...]',
+]
+
+
+def get_data():
+    data = {
+        'now': datetime.datetime.now().isoformat(),
+        'idle_time': get_idle_time(),
+        'applications': get_running_applications(),
+        'active_chrome_tab': get_active_chrome_tab(),
+        'firefox_tab': get_active_firefox_tab(),
+    }
+
+    data['active_application'] = first(d['name'] for d in data['applications'] if d['active'])
+
+    # correct firefox tab if it is not running
+    is_firefox_active = any('firefox' in d['name'].lower() for d in data['applications'])
+
+    if not is_firefox_active:
+        data['firefox_tab'] = ''
+
+    return data
+
+
+def get_idle_time():
+    res = subprocess.run(['ioreg', '-c', 'IOHIDSystem'], stdout=subprocess.PIPE)
+    line = last(
+        line
+        for line in res.stdout.decode('ascii').splitlines()
+        if 'HIDIdleTime' in line
+    )
+    _, time = line.rsplit('=', 1)
+    time = float(time) / 1e9
+
+    return time
+
+
+def get_running_applications():
+    return [
+        {'name': app.localizedName(), 'active': app.isActive()}
+        for app in AppKit.NSWorkspace.sharedWorkspace().runningApplications()
+    ]
+
+
+def get_active_chrome_tab():
+    res = subprocess.run(['osascript'], stdout=subprocess.PIPE, input=b'''
+        if application "Google Chrome" is running then
+            tell application "Google Chrome"
+                if mode of first window = "incognito" then
+                    log "private"
+                else
+                    get URL of active tab of first window
+                end if
+            end tell
+        else
+            log ""
+        end if
+    ''')
+
+    return first(res.stdout.decode('utf8').splitlines())
+
+
+def get_active_firefox_tab():
+    session_file = get_firefox_session_file_path()
+
+    with open(session_file, 'rb') as fobj:
+        d = load_firefox_session_file(fobj)
+
+    active_window = d['selectedWindow']
+    active_window = d['windows'][active_window - 1]
+
+    active_tab = active_window['selected']
+    active_tab = active_window['tabs'][active_tab - 1]
+
+    current_page = last(active_tab['entries'])
+    return current_page['url']
+
+
+def get_firefox_session_file_path():
+    firefox_folder = os.path.expanduser('~/Library/Application Support/Firefox')
+    profiles = os.listdir(os.path.join(firefox_folder, 'Profiles'))
+    profile = first(profile for profile in profiles if profile.endswith('.default'))
+    return os.path.join(
+        firefox_folder, 'Profiles', profile, 'sessionstore-backups', 'recovery.jsonlz4'
+    )
+
+
+def load_firefox_session_file(fobj):
+    """skip magic comment, decompress, and JSON decode"""
+    content = fobj.read()
+    content = content[8:]
+    content = lz4.block.decompress(content)
+    return json.loads(content)
+
+
+def first(iterable):
+    for item in iterable:
+        return item
+
+    return None
+
+
+def last(iterable):
+    if isinstance(iterable, collections.Sequence):
+        return iterable[-1] if len(iterable) else None
+
+    item = None
+    for item in iterable:
+        pass
+
+    return item
+
+
+if __name__ == "__main__":
+    main()
