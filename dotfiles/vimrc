@@ -104,6 +104,14 @@ au BufWrite *.py :call ImplDeleteTrailingWhiteSpace()
 let g:vim_markdown_folding_disabled = 1
 let g:vim_markdown_math = 1
 
+" fix wrapping of lists
+" (https://github.com/plasticboy/vim-markdown/issues/232)
+autocmd FileType markdown
+    \ set formatoptions-=q |
+    \ set formatlistpat=^\\s*\\d\\+\\.\\s\\+\\\|^\\s*\[-*+]\\s\\+
+
+au BufWrite *.md :call ImplDeleteTrailingWhiteSpace()
+
 " add command to remove all 'Mac'-spaces
 command! DeleteMacSpace %s#\%u00a0##
 
