@@ -91,7 +91,8 @@ Vue.component('view-directory', {
 Vue.component('view-file', {
     props: ['path'],
     template: `
-        <render-markdown v-bind:content="content"></render-markdown>
+        <render-markdown v-bind:path="path" v-bind:content="content">
+        </render-markdown>
     `,
     asyncComputed: {
         content: function() {
@@ -105,7 +106,7 @@ Vue.component('view-file', {
 });
 
 Vue.component('render-markdown', {
-    props: ['content'],
+    props: ['content', 'path'],
     template: `<div v-html="rendered"></div>`,
     computed: {
         rendered: function() {
@@ -113,7 +114,10 @@ Vue.component('render-markdown', {
                 return '';
             }
             var reader = new commonmark.Parser();
-            var writer = new CustomRenderer({urlPrefix: '#/view/./'});
+            var writer = new CustomRenderer({
+                urlPrefix: '#/view/',
+                basePath: this.path,
+            });
             var parsed = reader.parse(this.content);
             var rendered = writer.render(parsed);
             return rendered;
@@ -126,6 +130,9 @@ function CustomRenderer(options) {
     this.urlPrefix = options.urlPrefix || '';
     options.urlPrefix = undefined;
 
+    this.basePath = options.basePath || null;
+    options.basePath = undefined;
+
     commonmark.HtmlRenderer.call(this, options);
 }
 
@@ -137,7 +144,7 @@ CustomRenderer.prototype.link = function(node, entering) {
     var attrs = this.attrs(node);
     if (entering) {
         if (!(this.options.safe && potentiallyUnsafe(node.destination))) {
-            attrs.push(['href', this.urlPrefix + this.esc(node.destination, true)]);
+            attrs.push(['href', this.formatLink(node)]);
         }
         if (node.title) {
             attrs.push(['title', this.esc(node.title, true)]);
@@ -146,6 +153,48 @@ CustomRenderer.prototype.link = function(node, entering) {
     } else {
         this.tag('/a');
     }
+}
+
+CustomRenderer.prototype.formatLink = function(node) {
+    const normalizeDestination = (destination) => {
+        if(destination.startsWith('/')) {
+            return destination
+        }
+
+        const index = this.basePath.lastIndexOf('/');
+
+        if(index == -1) {
+            return destination;
+        }
+
+        return skipDotSegments(this.basePath.slice(0, index) + '/' + destination);
+    }
+
+    // remove '.' and '..' from a path
+    const skipDotSegments = (path) => {
+        const impl = (path) => {
+            if(path.length == 0) {
+                return [];
+            }
+
+            if(path[0] == '.') {
+                return impl(path.slice(1));
+            }
+            if(path[1] == '..') {
+                return impl(path.slice(2));
+            }
+            return [
+                path[0],
+                ...impl(path.slice(1))
+            ];
+        }
+
+        return impl(path.split('/')).join('/');
+    }
+
+
+    return this.urlPrefix + this.esc(normalizeDestination(node.destination), true);
+
 }
 
 const router = new VueRouter({
