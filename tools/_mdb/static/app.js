@@ -36,12 +36,20 @@ Vue.component('view-home', {
             return this.$http.get('/tree')
             .then(content => content.json())
             .then(content => {
-                if(content.content.some(file => file == './Index.md')) {
-                    return 'Index.md';
-                }
-                else {
-                    return '.';
-                }
+                return content.content.reduce(
+                    (curr, file) => {
+                        if(file.toLowerCase() == './readme.md') {
+                            return file;
+                        }
+                        else if (file.toLowerCase() == './index.md') {
+                            return file;
+                        }
+                        else {
+                            return curr;
+                        }
+                    },
+                    '.',
+                );
             })
             .catch(console.error);
         }
