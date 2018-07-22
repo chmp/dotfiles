@@ -1,0 +1,36 @@
+a {
+    color: #6E91A1
+}
+
+a:hover, a:active {
+    color: #FF8900;
+}
+
+ul.navigation {
+    overflow: hidden;
+    height: 2em;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #6E91A1;
+    width: 100%;
+}
+
+ul.navigation  li {
+    float: left;
+    display: inline;
+    min-width: 3em;
+    padding: 0.5em;
+    background-color: #6E91A1;
+    color: #fff;
+    margin: 0;
+    text-align: center;
+}
+
+ul.navigation li:hover {
+    background-color: #FF8900;
+}
+
+ul.navigation li a {
+    color: #fff;
+}
