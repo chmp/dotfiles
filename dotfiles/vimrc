@@ -31,9 +31,6 @@ filetype plugin indent on
 " --            vundle               --
 " -------------------------------------
 
-" conceal
-set conceallevel=2
-
 " configure tab completion behavior
 set wildmode=longest,list,full
 set wildmenu
@@ -154,18 +151,7 @@ function WriteCreatingDirs()
 endfunction
 command W call WriteCreatingDirs()
 
-" add command to call tig at nearest git repo
-func! ExecuteTig()
-    let l:git_dir = finddir('.git', expand('%:p:h') . ';')
-
-    if l:git_dir == ''
-        echo 'could not find gitfolder'
-        return
-    endif
-
-    let l:project_dir = fnamemodify(l:git_dir, ':h')
-    exec '!cd' shellescape(l:project_dir) '&& tig'
-endfunc
-
-command! Tig :call ExecuteTig()
-
+" remember last position when opening a file (https://askubuntu.com/a/224908)
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
