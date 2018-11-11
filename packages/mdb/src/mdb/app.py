@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-"""Browser for markdown files.
-"""
 import argparse
 import os.path
+import subprocess
 import threading
 import time
 import webbrowser
@@ -13,6 +11,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 def build_app(root):
+    print('build app for', root)
     root = os.path.abspath(root)
 
     if not root.endswith(os.path.sep):
@@ -20,12 +19,12 @@ def build_app(root):
 
     app = Flask(
         __name__,
-        static_folder=os.path.join(basedir, '_mdb', 'static'),
+        static_folder=os.path.join(basedir, 'static'),
     )
 
     @app.route('/')
     def index():
-        with open(os.path.join(basedir, '_mdb', 'static', 'index.html'), 'rt') as fobj:
+        with open(os.path.join(basedir, 'static', 'index.html'), 'rt') as fobj:
             return fobj.read()
 
     @app.route('/tree/<path:path>')
@@ -44,6 +43,7 @@ def build_app(root):
                     if (
                         not p.startswith('.') and (
                             p.endswith('.md') or
+                            p.endswith('.ipynb') or
                             os.path.isdir(os.path.join(root, path, p))
                         )
                     )
@@ -62,6 +62,18 @@ def build_app(root):
     def tree_post(path):
         raise RuntimeError('updates currently not supported')
 
+    @app.route('/open/')
+    @app.route('/open/<path:path>')
+    def _open(path='.'):
+        subprocess.check_call(['open', path], cwd=root)
+        return jsonify(type='success')
+
+    @app.route('/new/<path:path>')
+    def _new(path):
+        subprocess.check_call(['touch', path], cwd=root)
+        subprocess.check_call(['open', path], cwd=root)
+        return jsonify(type='success')
+
     return app
 
 
@@ -73,15 +85,13 @@ def wait_and_open_tab(root, url, delay=1):
     threading.Thread(target=target).start()
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('root', nargs='?', default='.')
-parser.add_argument('--debug', default=False, action='store_true')
+def main(args=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('root', nargs='?', default='.')
+    parser.add_argument('--debug', default=False, action='store_true')
 
-
-if __name__ == "__main__":
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     app = build_app(args.root)
 
     wait_and_open_tab(args.root, 'http://localhost:5000/#/home', delay=1)
     app.run(debug=args.debug)
-

@@ -1,5 +1,5 @@
 a {
-    color: #6E91A1
+    color: #6E91A1;
 }
 
 a:hover, a:active {
@@ -33,4 +33,23 @@ ul.navigation li:hover {
 
 ul.navigation li a {
     color: #fff;
+}
+
+ul.directory li.file a {
+    color: #6E6171;
+}
+
+ul.directory li.file a:hover, ul.directory li.file a:active {
+    color: #FF8900;
+}
+
+pre {
+    max-width: 100%;
+    overflow: scroll;
+}
+
+ul.navigation button {
+    border: none;
+    background: none;
+    font-size: 1.05em;
 }
